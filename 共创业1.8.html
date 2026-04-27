@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>共创业 · 合规合伙平台</title>
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family:'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif; background:#f5f7fb; color:#1e293b; }
+        :root {
+            --primary:#2563eb; --success:#10b981; --warning:#f59e0b; --danger:#ef4444;
+            --white:#ffffff; --border:#e2e8f0; --bg-card:#ffffff; --text-secondary:#64748b; --shadow:0 4px 24px rgba(0,0,0,0.06);
+        }
+        a { text-decoration:none; color:var(--primary); }
+        .navbar { background:var(--white); border-bottom:1px solid var(--border); position:sticky; top:0; z-index:100; padding:0 24px; height:64px; display:flex; align-items:center; justify-content:space-between; }
+        .logo { font-size:22px; font-weight:700; color:#0f172a; display:flex; align-items:center; gap:8px; cursor:pointer; }
+        .logo span { color:var(--primary); }
+        .nav-links { display:flex; gap:24px; align-items:center; }
+        .nav-links a { color:#475569; font-weight:500; transition:0.2s; }
+        .nav-links a:hover,.nav-links a.active { color:var(--primary); }
+        .nav-right { display:flex; align-items:center; gap:16px; position: relative; }
+        .notification-bell { position:relative; cursor:pointer; font-size:22px; }
+        .notification-bell .badge { position:absolute; top:-8px; right:-10px; background:var(--danger); color:white; border-radius:50%; width:18px; height:18px; font-size:11px; display:flex; align-items:center; justify-content:center; }
+        .notification-dropdown { display:none; position:absolute; top:100%; right:0; background:white; border:1px solid var(--border); border-radius:12px; box-shadow:var(--shadow); width:350px; max-height:400px; overflow-y:auto; z-index:200; }
+        .notification-dropdown.active { display:block; }
+        .notification-item { padding:12px; border-bottom:1px solid var(--border); font-size:13px; }
+        .notification-item .reply-btn { color:var(--primary); cursor:pointer; font-weight:500; }
+        .clickable-name { cursor:pointer; color:var(--primary); font-weight:500; margin-right:12px; }
+        .clickable-name:hover { text-decoration:underline; }
+        .btn { padding:8px 20px; border-radius:10px; font-weight:600; font-size:14px; cursor:pointer; border:none; transition:all 0.2s; }
+        .btn-primary { background:var(--primary); color:white; }
+        .btn-primary:hover { background:#1d5bd7; }
+        .btn-outline { background:transparent; border:1px solid var(--border); color:#334155; }
+        .btn-outline:hover { border-color:var(--primary); color:var(--primary); }
+        .btn-sm { padding:6px 14px; font-size:13px; border-radius:8px; }
+        .btn-success { background:var(--success); color:white; }
+        .btn-success:hover { background:#059669; }
+        .btn-danger { background:var(--danger); color:white; }
+        .btn-danger:hover { background:#dc2626; }
+        .btn-back { display:inline-flex; align-items:center; gap:6px; background:var(--white); border:1px solid var(--border); border-radius:10px; padding:8px 16px; font-weight:600; font-size:14px; color:#475569; cursor:pointer; transition:0.2s; margin-bottom:20px; }
+        .btn-back:hover { border-color:var(--primary); color:var(--primary); background:#f8faff; }
+        .btn-back svg { width:16px; height:16px; stroke:currentColor; }
+        .container { max-width:1200px; margin:0 auto; padding:24px; }
+        .page-title { font-size:24px; font-weight:700; margin-bottom:24px; }
+        .grid { display:grid; grid-template-columns: repeat(auto-fill, minmax(300px,1fr)); gap:20px; }
+        .card { background:var(--bg-card); border-radius:16px; box-shadow:var(--shadow); border:1px solid var(--border); padding:24px; transition:transform 0.2s,box-shadow 0.2s; position:relative; cursor:pointer; display:flex; flex-direction:column; }
+        .card:hover { transform:translateY(-4px); box-shadow:0 12px 32px rgba(0,0,0,0.1); }
+        .card h3 { font-size:18px; margin-bottom:8px; padding-right:130px; word-break:break-word; }
+        .org-type { display:inline-block; background:#e0e7ff; color:#1e40af; font-size:12px; font-weight:600; padding:2px 10px; border-radius:20px; margin-right:8px; margin-bottom:4px; }
+        .capital { font-weight:700; color:var(--primary); margin:12px 0 8px; padding-right:130px; }
+        .raised { font-size:14px; color:var(--text-secondary); margin-left:12px; }
+        .desc { color:var(--text-secondary); font-size:14px; line-height:1.5; word-break:break-word; padding-right:130px; }
+        .stage { font-size:13px; color:var(--primary); margin:8px 0; font-weight:500; padding-right:130px; }
+        .members-info { font-size:14px; color:var(--text-secondary); margin:8px 0; display:flex; flex-wrap:wrap; align-items:center; gap:4px; padding-right:130px; }
+        .badge-verified { background:#fef3c7; color:#92400e; font-size:12px; border-radius:20px; padding:2px 8px; margin-left:8px; }
+        .card-actions { position:absolute; top:24px; right:24px; display:flex; flex-direction:column; gap:8px; z-index:10; }
+        .fav-btn { background:var(--white); border:1px solid var(--border); border-radius:10px; padding:6px 14px; font-size:13px; font-weight:600; color:#475569; cursor:pointer; transition:0.2s; display:inline-flex; align-items:center; gap:4px; white-space:nowrap; }
+        .fav-btn .star { font-size:15px; color:#ccc; transition:color 0.2s; }
+        .fav-btn.active .star { color:#f59e0b; }
+        .fav-btn.active { border-color:#f59e0b; color:#92400e; }
+        .fav-btn:hover { border-color:var(--primary); color:var(--primary); }
+        .social-row { margin-top:auto; display:flex; gap:24px; align-items:center; padding-top:12px; }
+        .social-action { display:flex; flex-direction:column; align-items:center; gap:2px; cursor:pointer; background:none; border:none; color:var(--text-secondary); transition:0.2s; }
+        .social-action .icon { font-size:26px; line-height:1; width:26px; text-align:center; }
+        .social-action .count { font-size:13px; font-weight:600; }
+        .social-action.liked .icon { color:var(--danger); }
+        .comment-section { margin-top:8px; padding-top:8px; border-top:1px solid var(--border); display:none; }
+        .comment-item { padding:6px 0; font-size:13px; border-bottom:1px solid #f1f5f9; word-break:break-word; }
+        .comment-item .reply-link { margin-left:8px; color:var(--primary); cursor:pointer; font-size:12px; }
+        .comment-reply { margin-left:20px; margin-top:8px; padding-left:16px; border-left:2px solid var(--border); }
+        .comment-input { display:flex; gap:8px; margin-top:8px; }
+        .comment-input input { flex:1; padding:6px 10px; border-radius:8px; border:1px solid var(--border); font-size:13px; }
+        .role-tag { display:inline-block; font-size:10px; padding:2px 6px; border-radius:8px; margin-right:6px; font-weight:500; color:white; white-space:nowrap; }
+        .role-founder { background:#6366f1; }
+        .role-capital { background:#10b981; }
+        .role-tech { background:#8b5cf6; }
+        .role-management { background:#f59e0b; }
+        .role-employee { background:#3b82f6; }
+        .role-parttime { background:#ec4899; }
+        .member-row { display:flex; align-items:center; gap:6px; padding:4px 0; }
+        .member-tag-area { width:70px; flex-shrink:0; text-align:right; }
+        .member-name { flex:1; word-break:break-word; }
+
+        /* 详情页布局 - 强制横向 */
+        #page-detail { display: flex; flex-wrap: nowrap; gap: 24px; align-items: flex-start; }
+        .detail-left { flex: 1; min-width: 0; }
+        .detail-right { flex: 1; min-width: 0; }
+        .chat-panel { background:var(--white); border-radius:16px; box-shadow:var(--shadow); border:1px solid var(--border); display:flex; flex-direction:column; height:auto; }
+        .chat-panel-header { padding:16px; border-bottom:1px solid var(--border); font-weight:600; }
+        .chat-panel-messages { flex:1; overflow-y:auto; padding:12px; background:#f8fafc; min-height:200px; max-height:500px; }
+        .chat-msg { margin-bottom:12px; display:flex; flex-direction:column; word-break:break-word; }
+        .chat-msg .sender { font-weight:600; font-size:13px; color:var(--primary); }
+        .chat-msg .text { background:white; padding:8px 12px; border-radius:12px; margin-top:2px; font-size:14px; border:1px solid var(--border); max-width:80%; }
+        .chat-panel-input { display:flex; gap:8px; padding:12px; border-top:1px solid var(--border); }
+        .chat-panel-input input { flex:1; }
+        .modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); backdrop-filter:blur(4px); justify-content:center; align-items:center; z-index:200; }
+        .modal.active { display:flex; }
+        .modal-content { background:white; border-radius:20px; padding:32px; width:90%; box-shadow:0 25px 60px rgba(0,0,0,0.2); animation:slideUp 0.3s ease; max-height:85vh; overflow-y:auto; }
+        .modal-login-register { max-width:400px; }
+        .modal-wide { max-width:600px; }
+        @keyframes slideUp { from{ opacity:0; transform:translateY(20px); } to{ opacity:1; transform:translateY(0); } }
+        .modal-title { font-size:20px; font-weight:700; margin-bottom:20px; }
+        .form-group { margin-bottom:16px; }
+        label { display:block; font-weight:600; margin-bottom:6px; font-size:14px; }
+        input,select,textarea { width:100%; padding:10px 14px; border:1px solid var(--border); border-radius:10px; font-size:14px; background:#f8fafc; transition:0.2s; }
+        input:focus,select:focus,textarea:focus { outline:none; border-color:var(--primary); box-shadow:0 0 0 3px rgba(37,99,235,0.1); }
+        .legal-tip { background:#fef9e7; border-left:4px solid var(--warning); padding:12px; border-radius:0 8px 8px 0; font-size:13px; color:#92400e; margin:16px 0; }
+        .page { display:none; }
+        .page.active { display:block; }
+        .dashboard { display:grid; grid-template-columns:1fr 1fr; gap:24px; }
+        @media(max-width:800px) { .dashboard { grid-template-columns:1fr; } }
+        .application-list { margin-top:16px; }
+        .application-item { padding:12px; border:1px solid var(--border); border-radius:12px; margin-bottom:12px; }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo" id="homeLogo">🤝 <span>共创业</span></div>
+        <div class="nav-links" id="navLinks">
+            <a href="#" class="active" data-page="home">项目广场</a>
+            <a href="#" data-page="myprojects">我的项目</a>
+        </div>
+        <div class="nav-right">
+            <span id="userArea"><button class="btn btn-outline btn-sm" id="loginBtn">登录</button><button class="btn btn-primary btn-sm" id="registerBtn">注册</button></span>
+            <span id="loggedInArea" style="display:none;"><span class="clickable-name" id="displayName"></span><button class="btn btn-outline btn-sm" id="verifyBtn" style="display:none;">实名认证</button><button class="btn btn-outline btn-sm" id="logoutBtn">退出</button></span>
+            <div class="notification-bell" id="notificationBell">
+                🔔 <span class="badge" id="notificationCount" style="display:none;">0</span>
+                <div class="notification-dropdown" id="notificationDropdown"></div>
+            </div>
+        </div>
+    </nav>
+    <div class="container">
+        <div id="page-home" class="page active"><h2 class="page-title">📌 可参与项目</h2><div class="grid" id="projectList"></div></div>
+        <div id="page-myprojects" class="page">
+            <button class="btn-back back-home-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>返回</button>
+            <div style="display:flex;justify-content:space-between;align-items:center;"><h2 class="page-title">📂 我的项目</h2><button class="btn btn-primary" id="myCreateBtn">+ 发起新项目</button></div>
+            <div class="grid" id="myProjectList"></div>
+            <p id="noMyProjects" style="text-align:center;color:var(--text-secondary);margin-top:40px;display:none;">暂无项目</p>
+        </div>
+        <div id="page-create" class="page"><button class="btn-back back-home-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>返回</button><h2 class="page-title">📝 发起合伙项目</h2><div class="card" style="max-width:700px;position:static;"><form id="createProjectForm"><div class="form-group"><label>项目名称</label><input type="text" id="projName" required></div><div class="form-group"><label>项目描述</label><textarea id="projDesc" rows="3" required></textarea></div><div class="form-group"><label>组织形式</label><select id="orgType" required><option value="limited_partnership">有限合伙企业</option><option value="limited_company">有限责任公司</option></select></div><div class="form-group"><label>项目阶段</label><select id="projStage" required><option value="idea">💡 想法初期</option><option value="newly_established">🌱 刚成立</option><option value="registered">📋 已注册公司</option><option value="operating">🏢 已营业</option><option value="seeking_partners">🤝 招合伙中</option><option value="fundraising">💰 正融资</option><option value="series_a">🚀 A轮融资</option><option value="growth">📈 成长期</option></select></div><div class="form-group"><label>目标筹资额 (元)</label><input type="number" id="targetCapital" required></div><div class="form-group"><label>目标成员人数</label><input type="number" id="targetMembers" required min="1"></div><div class="form-group"><label><input type="checkbox" id="requireVerified" style="width:auto;margin-right:8px;"> 仅允许已实名认证的用户参与</label></div><button type="submit" class="btn btn-primary" style="width:100%;">创建项目</button></form></div></div>
+        <div id="page-detail" class="page"></div>
+        <div id="page-dashboard" class="page"><button class="btn-back back-home-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>返回</button><h2 class="page-title" id="dashboardTitle">📊 治理面板</h2><div class="dashboard"><div class="card"><h3>👥 成员与权重</h3><div id="memberList" style="margin-top:12px;"></div></div><div class="card"><h3>💰 财务快照</h3><div id="financeSummary"></div><div><button class="btn btn-outline btn-sm" id="addFinanceBtn">记录收支</button><div id="financeForm" style="display:none;"><select id="finType"><option value="income">收入</option><option value="expense">支出</option></select><input type="number" id="finAmount" placeholder="金额" style="width:120px;margin:0 8px;"><input type="text" id="finDesc" placeholder="说明"><button class="btn btn-primary btn-sm" id="saveFinance">保存</button></div></div></div><div class="card" style="grid-column:span 2;"><h3>🗳️ 提案与投票</h3><div id="voteList"></div><button class="btn btn-outline btn-sm" id="createVoteBtn">+ 创建新提案</button><div id="voteCreateForm" style="display:none;"><input type="text" id="voteTitle" placeholder="提案标题"><textarea id="voteDesc" placeholder="说明" rows="2"></textarea><input type="text" id="voteOptions" placeholder="选项，逗号分隔"><button class="btn btn-primary btn-sm" id="saveVote">发起投票</button></div></div></div></div>
+        <div id="page-personal" class="page"><button class="btn-back back-home-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>返回</button><h2 class="page-title">👤 个人中心</h2><div class="card" style="max-width:500px;"><form id="profileForm"><div class="form-group"><label>用户名</label><input type="text" id="profileUsername" disabled style="background:#f1f5f9;"></div><div class="form-group"><label>真实姓名</label><input type="text" id="profileRealName"></div><div class="form-group"><label>身份证号</label><input type="text" id="profileIdCard"></div><div class="legal-tip">信息仅用于身份核验。</div><button type="submit" class="btn btn-primary" style="width:100%;">保存修改</button></form></div></div>
+    </div>
+    <!-- 弹窗区域（保持不变） -->
+    <div class="modal" id="loginModal"><div class="modal-content modal-login-register"><h3 class="modal-title">登录</h3><form id="loginForm"><div class="form-group"><input type="text" id="loginUser" placeholder="用户名" required></div><div class="form-group"><input type="password" id="loginPass" placeholder="密码" required></div><button type="submit" class="btn btn-primary" style="width:100%;">登录</button></form><div style="text-align:center;margin-top:12px;"><a href="#" id="toRegister">没有账号？立即注册</a></div></div></div>
+    <div class="modal" id="registerModal"><div class="modal-content modal-login-register"><h3 class="modal-title">注册</h3><form id="registerForm"><div class="form-group"><input type="text" id="regUser" placeholder="用户名" required></div><div class="form-group"><input type="password" id="regPass" placeholder="密码" required></div><button type="submit" class="btn btn-primary" style="width:100%;">注册</button></form><div style="text-align:center;margin-top:12px;"><a href="#" id="toLogin">已有账号？去登录</a></div></div></div>
+    <div class="modal" id="verifyModal"><div class="modal-content modal-wide"><h3 class="modal-title">实名认证</h3><form id="verifyForm"><div class="form-group"><label>真实姓名</label><input type="text" id="verifyName" required></div><div class="form-group"><label>身份证号</label><input type="text" id="verifyIdCard" required></div><div class="legal-tip">信息仅用于身份核验。</div><button type="submit" class="btn btn-primary" style="width:100%;">提交认证</button></form></div></div>
+    <div class="modal" id="applyModal"><div class="modal-content" style="max-width:650px;"><h3 class="modal-title">选择参与身份</h3><div id="roleOptions"><div class="role-option" data-role="capital"><h4>💰 资金入股</h4><div class="role-details"><strong>规则：</strong>以货币出资，成为合伙人或股东。<br><strong>权益：</strong>按出资比例分红，参与重大表决。<br><strong>义务：</strong>足额缴纳出资，以出资额为限担责。</div></div><div class="role-option" data-role="tech"><h4>🔧 技术入股</h4><div class="role-details"><strong>规则：</strong>以可评估、可转让的知识产权作价出资。<br><strong>权益：</strong>获得对应股权，参与技术决策。<br><strong>义务：</strong>提供有效知识产权证明，配合评估验资。</div></div><div class="role-option" data-role="management"><h4>📈 管理层</h4><div class="role-details"><strong>规则：</strong>劳动合同+股权激励方式加入。<br><strong>权益：</strong>年薪、绩效奖金、期权。<br><strong>义务：</strong>履行管理职责，承担忠实勤勉义务。</div></div><div class="role-option" data-role="employee"><h4>🧑‍💼 普通员工</h4><div class="role-details"><strong>规则：</strong>签订劳动合同，建立劳动关系。<br><strong>权益：</strong>按月获得工资，享受社保带薪假。<br><strong>义务：</strong>遵守规章制度，履行岗位职责。</div></div><div class="role-option" data-role="parttime"><h4>🕒 兼职工</h4><div class="role-details"><strong>规则：</strong>按小时或项目计酬，时间灵活。<br><strong>权益：</strong>按约定获得劳动报酬。<br><strong>义务：</strong>按时保质完成交付。</div></div></div><div id="applyFormArea" style="display:none;margin-top:20px;"><form id="applyDetailForm"><div class="form-group" id="capitalField" style="display:none;"><label>投资金额 (元)</label><input type="number" id="applyAmount"></div><div class="form-group" id="techField" style="display:none;"><label>技术成果描述</label><textarea id="applyTech" rows="3"></textarea></div><div class="form-group" id="managementField" style="display:none;"><label>期望职位</label><input type="text" id="applyPositionMgmt"><label>期望年薪</label><input type="number" id="applySalaryMgmt"></div><div class="form-group" id="employeeField" style="display:none;"><label>应聘岗位</label><input type="text" id="applyPositionEmp"><label>期望月薪</label><input type="number" id="applySalaryEmp"></div><div class="form-group" id="parttimeField" style="display:none;"><label>可提供服务</label><input type="text" id="applyServicePT"><label>时薪</label><input type="number" id="applyHourlyRate"><label>每周小时</label><input type="number" id="applyHoursPerWeek"></div><button type="submit" class="btn btn-primary" style="width:100%;">确认提交申请</button></form></div><div style="text-align:right;margin-top:20px;"><button class="btn btn-outline btn-sm" id="cancelApply">取消</button></div></div></div>
+
+    <script>
+        (function() {
+            const mockUsers = [
+                { id:1001, username:'投资人小王', password:'123', realName:'王小兵', idCard:'510101199001011234', verified:true, favorites:[] },
+                { id:1002, username:'极客老李', password:'123', realName:'李工', idCard:'510102199105152345', verified:true, favorites:[] },
+                { id:1003, username:'设计师阿美', password:'123', realName:'陈美琪', idCard:'510103199308202456', verified:true, favorites:[] },
+                { id:1004, username:'运营新手', password:'123', realName:'赵小新', idCard:'', verified:false, favorites:[] },
+                { id:1005, username:'程序员老周', password:'123', realName:'周稳', idCard:'510104198812013456', verified:true, favorites:[] }
+            ];
+            let users = [...mockUsers];
+            let currentUser = null;
+            let notifications = [];
+
+            let projects = [
+                { id:1, founder:'张明', name:'星辰AI应用', desc:'开发企业级AI助手', orgType:'limited_company', stage:'idea', targetCapital:500000, raisedCapital:0, requireVerified:false, members:[{userId:101, realName:'张明', role:'创始发起人', voteWeight:100}], targetMembers:8, applications:[], finances:[], votes:[], likes:[], comments:[], chatMessages:[] },
+                { id:2, founder:'李芳', name:'绿色农场', desc:'有机蔬菜社区配送', orgType:'limited_partnership', stage:'operating', targetCapital:200000, raisedCapital:0, requireVerified:true, members:[{userId:102, realName:'李芳', role:'创始发起人', voteWeight:100}], targetMembers:5, applications:[], finances:[], votes:[], likes:[], comments:[], chatMessages:[] },
+                { id:3, founder:'王强', name:'极客硬件工坊', desc:'开源智能硬件研发', orgType:'limited_company', stage:'fundraising', targetCapital:300000, raisedCapital:0, requireVerified:false, members:[{userId:103, realName:'王强', role:'创始发起人', voteWeight:100}], targetMembers:6, applications:[], finances:[], votes:[], likes:[], comments:[], chatMessages:[] },
+                { id:4, founder:'陈雪', name:'非遗手工艺平台', desc:'传统手工艺线上体验', orgType:'limited_partnership', stage:'registered', targetCapital:150000, raisedCapital:0, requireVerified:true, members:[{userId:104, realName:'陈雪', role:'创始发起人', voteWeight:100}], targetMembers:4, applications:[], finances:[], votes:[], likes:[], comments:[], chatMessages:[] },
+                { id:5, founder:'刘阳', name:'城市共享自习室', desc:'智能预约学习空间', orgType:'limited_company', stage:'seeking_partners', targetCapital:100000, raisedCapital:0, requireVerified:false, members:[{userId:105, realName:'刘阳', role:'创始发起人', voteWeight:100}], targetMembers:3, applications:[], finances:[], votes:[], likes:[], comments:[], chatMessages:[] },
+                { id:6, founder:'赵欣', name:'校园文创品牌', desc:'设计及销售高校文化周边产品', orgType:'limited_company', stage:'newly_established', targetCapital:80000, raisedCapital:0, requireVerified:false, members:[{userId:106, realName:'赵欣', role:'创始发起人', voteWeight:100}], targetMembers:4, applications:[], finances:[], votes:[], likes:[], comments:[], chatMessages:[] },
+                { id:7, founder:'周鹏', name:'智慧停车系统', desc:'物联网解决停车难', orgType:'limited_partnership', stage:'fundraising', targetCapital:600000, raisedCapital:0, requireVerified:true, members:[{userId:107, realName:'周鹏', role:'创始发起人', voteWeight:100}], targetMembers:7, applications:[], finances:[], votes:[], likes:[], comments:[], chatMessages:[] },
+                { id:8, founder:'吴迪', name:'宠物社交App', desc:'宠物线上线下社区', orgType:'limited_company', stage:'idea', targetCapital:250000, raisedCapital:0, requireVerified:false, members:[{userId:108, realName:'吴迪', role:'创始发起人', voteWeight:100}], targetMembers:5, applications:[], finances:[], votes:[], likes:[], comments:[], chatMessages:[] },
+                { id:9, founder:'郑洁', name:'银发旅游专线', desc:'中老年慢旅行服务', orgType:'limited_partnership', stage:'operating', targetCapital:400000, raisedCapital:0, requireVerified:true, members:[{userId:109, realName:'郑洁', role:'创始发起人', voteWeight:100}], targetMembers:6, applications:[], finances:[], votes:[], likes:[], comments:[], chatMessages:[] }
+            ];
+
+            const stageMap = {
+                'idea':'💡 想法初期','newly_established':'🌱 刚成立','registered':'📋 已注册公司',
+                'operating':'🏢 已营业','seeking_partners':'🤝 招合伙中','fundraising':'💰 正融资','series_a':'🚀 A轮融资','growth':'📈 成长期'
+            };
+            const roleClassMap = {
+                '创始发起人':'role-founder','资金入股':'role-capital','技术入股':'role-tech',
+                '管理层':'role-management','普通员工':'role-employee','兼职工':'role-parttime'
+            };
+            let selectedRole = null, currentApplyProjectId = null;
+            let currentPageId = 'home', currentPageData = null;
+
+            function addNotification(notif) { notifications.unshift(notif); renderNotificationBadge(); }
+            function renderNotificationBadge() {
+                const count = notifications.filter(n => !n.read).length;
+                const badge = document.getElementById('notificationCount');
+                badge.style.display = count > 0 ? 'flex' : 'none';
+                badge.textContent = count;
+            }
+            function toggleNotificationDropdown() {
+                const dropdown = document.getElementById('notificationDropdown');
+                dropdown.classList.toggle('active');
+                if (dropdown.classList.contains('active')) renderNotifications();
+            }
+            function renderNotifications() {
+                const dropdown = document.getElementById('notificationDropdown');
+                const unread = notifications.filter(n => !n.read);
+                dropdown.innerHTML = unread.length === 0 ? '<div class="notification-item">暂无新消息</div>' :
+                    unread.map(n => `<div class="notification-item"><strong>${n.fromUser}</strong> ${n.type==='comment'?'评论了项目':'回复了你的评论'}: ${n.text.substring(0,20)}... <span class="reply-btn" data-id="${n.id}">查看</span></div>`).join('');
+                dropdown.querySelectorAll('.reply-btn').forEach(btn => btn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const notifId = parseInt(this.dataset.id);
+                    const notif = notifications.find(n => n.id === notifId);
+                    if (notif) { notif.read = true; renderNotificationBadge(); if (notif.projectId) showPage('detail', notif.projectId); }
+                    toggleNotificationDropdown();
+                }));
+            }
+
+            function showPage(pageId, data) {
+                if (pageId === currentPageId && data === currentPageData) return;
+                currentPageId = pageId; currentPageData = data;
+                document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+                const target = document.getElementById('page-'+pageId);
+                if (target) target.classList.add('active');
+                if (pageId==='home') renderProjects();
+                if (pageId==='myprojects') renderMyProjects();
+                if (pageId==='detail' && data) renderDetail(data);
+                if (pageId==='dashboard' && data) { document.getElementById('page-dashboard').dataset.projectId=data; renderDashboard(data); }
+                if (pageId==='personal') renderPersonal();
+                history.pushState({page: pageId, data: data}, '', '#' + pageId);
+            }
+            window.addEventListener('popstate', function(event) {
+                if (event.state) {
+                    currentPageId = event.state.page; currentPageData = event.state.data;
+                    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+                    const target = document.getElementById('page-'+event.state.page);
+                    if (target) target.classList.add('active');
+                    if (event.state.page==='home') renderProjects();
+                    if (event.state.page==='myprojects') renderMyProjects();
+                    if (event.state.page==='detail' && event.state.data) renderDetail(event.state.data);
+                    if (event.state.page==='dashboard' && event.state.data) { document.getElementById('page-dashboard').dataset.projectId=event.state.data; renderDashboard(event.state.data); }
+                    if (event.state.page==='personal') renderPersonal();
+                    document.querySelectorAll('#navLinks a').forEach(l => {
+                        if (l.dataset.page === event.state.page) l.classList.add('active');
+                        else l.classList.remove('active');
+                    });
+                } else { goHome(); }
+            });
+            function goHome() { showPage('home'); document.querySelectorAll('#navLinks a').forEach(l => l.classList.remove('active')); document.querySelector('[data-page="home"]').classList.add('active'); }
+            document.getElementById('homeLogo').addEventListener('click', goHome);
+            document.body.addEventListener('click', function(e) {
+                const backBtn = e.target.closest('.back-home-btn');
+                if (backBtn) { if (currentPageId === 'home') goHome(); else history.back(); }
+            });
+            document.querySelectorAll('#navLinks a').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const page = this.dataset.page;
+                    if (page==='home') goHome();
+                    else if (page==='myprojects') {
+                        if (!currentUser) { document.getElementById('loginModal').classList.add('active'); return; }
+                        showPage('myprojects');
+                    }
+                });
+            });
+
+            function updateUI() {
+                if (currentUser) {
+                    document.getElementById('userArea').style.display='none';
+                    document.getElementById('loggedInArea').style.display='block';
+                    document.getElementById('displayName').innerText = currentUser.username;
+                    document.getElementById('verifyBtn').style.display = currentUser.verified ? 'none' : 'inline-block';
+                } else {
+                    document.getElementById('userArea').style.display='block';
+                    document.getElementById('loggedInArea').style.display='none';
+                }
+                if (currentPageId === 'home') renderProjects();
+                if (currentPageId === 'myprojects') renderMyProjects();
+                renderNotificationBadge();
+            }
+
+            function getRoleTag(role) { const cls = roleClassMap[role] || ''; return `<span class="role-tag ${cls}">${role}</span>`; }
+
+            function toggleLike(projectId) {
+                if (!currentUser) { document.getElementById('loginModal').classList.add('active'); return; }
+                const p = projects.find(p => p.id===projectId);
+                if (!p) return;
+                const idx = p.likes.indexOf(currentUser.id);
+                if (idx>=0) p.likes.splice(idx,1); else p.likes.push(currentUser.id);
+                updateAllLikeUI(projectId);
+            }
+            function updateAllLikeUI(projectId) {
+                const p = projects.find(p => p.id===projectId);
+                if (!p) return;
+                const count = p.likes.length;
+                const liked = currentUser ? p.likes.includes(currentUser.id) : false;
+                document.querySelectorAll(`.like-action[data-id="${projectId}"]`).forEach(el => {
+                    const icon = el.querySelector('.icon');
+                    const cnt = el.querySelector('.count');
+                    if (icon) icon.textContent = liked ? '♥' : '♡';
+                    if (cnt) cnt.textContent = count;
+                    if (liked) el.classList.add('liked'); else el.classList.remove('liked');
+                });
+            }
+
+            function toggleComment(projectId, container = null) {
+                const sec = container ? container : document.querySelector(`.card[data-id="${projectId}"] .comment-section`);
+                if (!sec) return;
+                if (sec.style.display==='none' || sec.style.display==='') {
+                    sec.style.display='block';
+                    renderComments(projectId, sec);
+                    sec.onclick = function(e) { e.stopPropagation(); };
+                } else { sec.style.display='none'; }
+            }
+            function renderComments(projectId, container) {
+                const p = projects.find(x => x.id===projectId);
+                if (!p) return;
+                const memberIds = p.members.map(m => m.userId);
+                let html = '';
+                p.comments.forEach((c) => {
+                    const isMember = memberIds.includes(c.userId);
+                    const memberData = p.members.find(m => m.userId === c.userId);
+                    const roleTag = isMember && memberData ? getRoleTag(memberData.role) : '';
+                    html += `<div class="comment-item" id="comment-${c.id}"><strong>${roleTag}${c.username}</strong>: ${c.text} <span class="reply-link" data-comment-id="${c.id}">回复</span><div class="comment-reply">${(c.replies||[]).map(r => { const rIsMember = memberIds.includes(r.userId); const rMemberData = p.members.find(m => m.userId === r.userId); const rRoleTag = rIsMember && rMemberData ? getRoleTag(rMemberData.role) : ''; return `<div><strong>${rRoleTag}${r.username}</strong>: ${r.text}</div>`; }).join('')}</div></div>`;
+                });
+                if (!html) html = '<p style="font-size:13px;">暂无评论</p>';
+                container.innerHTML = `<div>${html}</div><div class="comment-input"><input id="commentInput${projectId}" placeholder="写下你的评论..."><button class="btn btn-sm btn-primary send-comment-btn" data-id="${projectId}">发送</button></div>`;
+                container.querySelector('.send-comment-btn').addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const input = document.getElementById('commentInput'+projectId);
+                    const text = input.value.trim();
+                    if (!text) return;
+                    if (!currentUser) { alert('请先登录'); return; }
+                    p.comments.push({ id: Date.now(), userId: currentUser.id, username: currentUser.username, text, replies: [] });
+                    input.value = '';
+                    renderComments(projectId, container);
+                    if (currentPageId === 'detail' && currentPageData === projectId) {
+                        const detailSec = document.querySelector('#page-detail .comment-section');
+                        if (detailSec) renderComments(projectId, detailSec);
+                    }
+                    if (currentUser.username !== p.founder && p.founder) addNotification({ id: Date.now(), type:'comment', projectId, fromUser: currentUser.username, text, read: false });
+                });
+                container.querySelectorAll('.reply-link').forEach(link => link.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const commentId = parseInt(this.dataset.commentId);
+                    const comment = p.comments.find(c => c.id === commentId);
+                    if (!comment) return;
+                    const replyText = prompt('回复 ' + comment.username + ':');
+                    if (!replyText) return;
+                    if (!currentUser) { alert('请先登录'); return; }
+                    comment.replies = comment.replies || [];
+                    comment.replies.push({ id: Date.now(), userId: currentUser.id, username: currentUser.username, text: replyText });
+                    renderComments(projectId, container);
+                    if (currentPageId === 'detail' && currentPageData === projectId) {
+                        const detailSec = document.querySelector('#page-detail .comment-section');
+                        if (detailSec) renderComments(projectId, detailSec);
+                    }
+                    if (comment.userId !== currentUser.id) addNotification({ id: Date.now(), type:'reply', projectId, commentId: comment.id, fromUser: currentUser.username, text: replyText, read: false });
+                }));
+                const inputEl = document.getElementById('commentInput'+projectId);
+                if (inputEl) inputEl.addEventListener('click', function(e) { e.stopPropagation(); });
+            }
+
+            document.getElementById('projectList').addEventListener('click', function(e) {
+                const socialAction = e.target.closest('.social-action');
+                if (socialAction) { e.stopPropagation(); const projectId = parseInt(socialAction.dataset.id); if (socialAction.classList.contains('like-action')) toggleLike(projectId); else if (socialAction.classList.contains('comment-action')) toggleComment(projectId); return; }
+                const btn = e.target.closest('button');
+                if (btn) { e.stopPropagation(); const projectId = parseInt(btn.dataset.id); if (isNaN(projectId)) return; if (btn.classList.contains('view-detail-btn')) showPage('detail', projectId); else if (btn.classList.contains('join-btn')) { if (!currentUser) { document.getElementById('loginModal').classList.add('active'); return; } const p = projects.find(p => p.id===projectId); if (!p) return; if (p.requireVerified && !currentUser.verified) { alert('需要实名认证'); document.getElementById('verifyModal').classList.add('active'); return; } openApplyModal(projectId); } else if (btn.classList.contains('fav-btn')) { if (!currentUser) { document.getElementById('loginModal').classList.add('active'); return; } toggleFavorite(projectId); renderProjects(); } return; }
+                const card = e.target.closest('.card'); if (card) { const id = parseInt(card.dataset.id); if (!isNaN(id)) showPage('detail', id); }
+            });
+
+            function toggleFavorite(projectId) { if (!currentUser.favorites) currentUser.favorites = []; const idx = currentUser.favorites.indexOf(projectId); if (idx>=0) currentUser.favorites.splice(idx,1); else currentUser.favorites.push(projectId); }
+            function isFavorited(projectId) { return currentUser && currentUser.favorites && currentUser.favorites.includes(projectId); }
+
+            function renderProjects() {
+                const list = document.getElementById('projectList');
+                list.innerHTML = projects.map(p => {
+                    const liked = currentUser && p.likes.includes(currentUser.id);
+                    const isFav = isFavorited(p.id);
+                    return `<div class="card" data-id="${p.id}">
+                        <div class="card-actions"><button class="btn btn-success btn-sm join-btn" data-id="${p.id}">我要参与</button><button class="btn btn-outline btn-sm view-detail-btn" data-id="${p.id}">查看详情</button><button class="fav-btn ${isFav?'active':''}" data-id="${p.id}"><span class="star">${isFav?'★':'☆'}</span> 收藏</button></div>
+                        <h3>${p.name} <span class="org-type">${p.orgType==='limited_company'?'有限责任公司':'有限合伙'}</span></h3>
+                        <div class="capital">目标资本 ¥${p.targetCapital.toLocaleString()}</div>
+                        <p class="desc">${p.desc}</p>
+                        <div class="stage">${stageMap[p.stage] || p.stage}</div>
+                        <div class="members-info"><span>👥 目标 ${p.targetMembers} 人 · 已参加 ${p.members.length} 人</span> ${p.requireVerified ? '<span class="badge-verified">仅实名用户参与</span>' : ''}</div>
+                        <div class="social-row">
+                            <div class="social-action like-action ${liked?'liked':''}" data-id="${p.id}"><span class="icon">${liked?'♥':'♡'}</span><span class="count">${p.likes.length}</span></div>
+                            <div class="social-action comment-action" data-id="${p.id}"><span class="icon">💬</span><span class="count">${p.comments.length}</span></div>
+                        </div>
+                        <div class="comment-section"></div>
+                    </div>`;
+                }).join('');
+            }
+
+            function renderMyProjects() {
+                const list = document.getElementById('myProjectList');
+                const no = document.getElementById('noMyProjects');
+                if (!list || !no) return;
+                if (!currentUser) { list.innerHTML = ''; no.style.display = 'block'; return; }
+                const my = projects.filter(p => p.founder === currentUser.username);
+                if (my.length === 0) { list.innerHTML = ''; no.style.display = 'block'; }
+                else {
+                    no.style.display = 'none';
+                    list.innerHTML = my.map(p => `<div class="card" data-id="${p.id}" style="cursor:pointer;"><h3>${p.name} <span class="org-type">${p.orgType==='limited_company'?'有限责任公司':'有限合伙'}</span></h3><div class="capital">目标资本 ¥${p.targetCapital.toLocaleString()}</div><p class="desc">${p.desc}</p><div class="stage">${stageMap[p.stage] || p.stage}</div><div class="members-info">👥 目标 ${p.targetMembers} 人 · 已参加 ${p.members.length} 人 · 申请 ${p.applications.filter(a=>a.status==='pending').length} 条</div></div>`).join('');
+                    list.querySelectorAll('.card').forEach(c => c.addEventListener('click', function() { showPage('detail', parseInt(this.dataset.id)); }));
+                }
+            }
+            document.getElementById('myCreateBtn').addEventListener('click', ()=> { if (!currentUser) { document.getElementById('loginModal').classList.add('active'); return; } showPage('create'); });
+
+            // 项目详情页 - 直接设置容器为Flex
+            function renderDetail(projectId) {
+                const p = projects.find(x => x.id===projectId);
+                if (!p) return;
+                const isMember = currentUser && p.members.some(m => m.userId===currentUser.id);
+                const isFounder = currentUser && currentUser.username === p.founder;
+                const liked = currentUser && p.likes.includes(currentUser.id);
+                const detailDiv = document.getElementById('page-detail');
+
+                let membersHtml = '';
+                if (isMember || isFounder) {
+                    const memberRows = p.members.map(m => `<div class="member-row"><div class="member-tag-area">${getRoleTag(m.role)}</div><div class="member-name">${m.realName} (权重${m.voteWeight}%)</div></div>`).join('');
+                    membersHtml = `<hr><h3>现有成员</h3>${memberRows}`;
+                } else {
+                    membersHtml = `<hr><p style="color:var(--text-secondary);">加入项目后可查看详细成员信息</p>`;
+                }
+
+                let cardActionsHtml = isMember
+                    ? `<div class="card-actions"><button class="btn btn-success" id="detailJoinBtn">我要参与</button><button class="btn btn-outline btn-sm" id="gotoDashboardBtn">治理面板</button></div>`
+                    : `<div class="card-actions"><button class="btn btn-success" id="detailJoinBtn">我要参与</button></div>`;
+
+                let leftHtml = `
+                    <button class="btn-back back-home-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>返回</button>
+                    <div class="card">
+                        ${cardActionsHtml}
+                        <h3>${p.name} <span class="org-type">${p.orgType==='limited_company'?'有限责任公司':'有限合伙'}</span></h3>
+                        <div class="capital">目标资本 ¥${p.targetCapital.toLocaleString()}<span class="raised">已筹集 ¥${(p.raisedCapital||0).toLocaleString()}</span></div>
+                        <p class="desc">${p.desc}</p>
+                        <div class="stage">${stageMap[p.stage] || p.stage}</div>
+                        <div class="members-info"><span>👥 目标 ${p.targetMembers} 人 · 已参加 ${p.members.length} 人</span> ${p.requireVerified ? '<span class="badge-verified">仅实名用户参与</span>' : ''}</div>
+                        ${membersHtml}
+                        ${isFounder ? `<div style="margin-top:16px;"><h4>📩 参与申请 (${p.applications.filter(a=>a.status==='pending').length})</h4><div class="application-list">${p.applications.filter(a=>a.status==='pending').map(a => `<div class="application-item"><p><strong>${a.realName}</strong> 申请成为 <em>${a.role}</em></p><p>${a.details ? Object.entries(a.details).map(([k,v])=>k+': '+v).join('，') : ''}</p><div class="application-actions"><button class="btn btn-sm btn-success accept-app" data-appid="${a.id}">接受</button><button class="btn btn-sm btn-danger reject-app" data-appid="${a.id}">拒绝</button></div></div>`).join('') || '<p>暂无待审核申请</p>'}</div>` : ''}
+                        <div class="social-row" style="margin-top:20px;">
+                            <div class="social-action like-action ${liked?'liked':''}" data-id="${p.id}"><span class="icon">${liked?'♥':'♡'}</span><span class="count">${p.likes.length}</span></div>
+                            <div class="social-action comment-action" data-id="${p.id}"><span class="icon">💬</span><span class="count">${p.comments.length}</span></div>
+                        </div>
+                        <div class="comment-section"></div>
+                    </div>
+                `;
+
+                let rightHtml = isMember ? `
+                    <div class="chat-panel">
+                        <div class="chat-panel-header">💬 项目群聊</div>
+                        <div class="chat-panel-messages" id="detailChatMessages"></div>
+                        <div class="chat-panel-input"><input type="text" id="detailChatInput" placeholder="输入消息..."><button class="btn btn-primary btn-sm" id="sendDetailChatBtn">发送</button></div>
+                    </div>` : '';
+
+                if (isMember) {
+                    detailDiv.innerHTML = `
+                        <div class="detail-left">${leftHtml}</div>
+                        <div class="detail-right">${rightHtml}</div>`;
+                } else {
+                    detailDiv.innerHTML = leftHtml;
+                }
+                detailDiv.dataset.projectId = projectId;
+
+                document.getElementById('detailJoinBtn')?.addEventListener('click', () => {
+                    if (!currentUser) { document.getElementById('loginModal').classList.add('active'); return; }
+                    if (p.requireVerified && !currentUser.verified) { alert('需要实名认证'); document.getElementById('verifyModal').classList.add('active'); return; }
+                    openApplyModal(projectId);
+                });
+                document.getElementById('gotoDashboardBtn')?.addEventListener('click', ()=> showPage('dashboard', projectId));
+                const likeBtn = detailDiv.querySelector('.like-action'); if (likeBtn) likeBtn.addEventListener('click', (e) => { e.stopPropagation(); toggleLike(projectId); });
+                const commentBtn = detailDiv.querySelector('.comment-action'); const commentSec = detailDiv.querySelector('.comment-section');
+                if (commentBtn && commentSec) commentBtn.addEventListener('click', (e) => { e.stopPropagation(); if (commentSec.style.display==='none'||commentSec.style.display==='') { commentSec.style.display='block'; renderComments(projectId, commentSec); commentSec.onclick = function(e) { e.stopPropagation(); }; } else commentSec.style.display='none'; });
+                if (isFounder) {
+                    detailDiv.querySelectorAll('.accept-app').forEach(b => b.addEventListener('click', function(e) { e.stopPropagation(); handleApplication(projectId, parseInt(this.dataset.appid), 'accepted'); }));
+                    detailDiv.querySelectorAll('.reject-app').forEach(b => b.addEventListener('click', function(e) { e.stopPropagation(); handleApplication(projectId, parseInt(this.dataset.appid), 'rejected'); }));
+                }
+                if (isMember) {
+                    const chatMessagesDiv = document.getElementById('detailChatMessages');
+                    const chatInput = document.getElementById('detailChatInput');
+                    const sendBtn = document.getElementById('sendDetailChatBtn');
+                    const updateChat = () => {
+                        if (chatMessagesDiv) {
+                            chatMessagesDiv.innerHTML = p.chatMessages.map(m => { const senderMember = p.members.find(mb => mb.userId === m.userId) || (currentUser && currentUser.id===m.userId ? {role:'你'} : null); const roleTag = senderMember ? getRoleTag(senderMember.role) : ''; return `<div class="chat-msg"><span class="sender">${roleTag}${m.sender}</span><div class="text">${m.text}</div></div>`; }).join('');
+                            chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
+                        }
+                    };
+                    updateChat();
+                    sendBtn.addEventListener('click', () => { const text = chatInput.value.trim(); if (!text) return; p.chatMessages.push({ userId: currentUser.id, sender: currentUser.username, text }); chatInput.value = ''; updateChat(); });
+                }
+            }
+
+            function handleApplication(projectId, appId, status) {
+                const p = projects.find(x => x.id===projectId);
+                if (!p) return;
+                const app = p.applications.find(a => a.id===appId);
+                if (!app) return;
+                app.status = status;
+                if (status==='accepted') { p.members.push({ userId: app.userId, realName: app.realName, role: app.role, voteWeight: 10 }); if (app.role === 'capital' && app.details?.amount) p.raisedCapital = (p.raisedCapital||0) + Number(app.details.amount); }
+                renderDetail(projectId);
+            }
+
+            function renderDashboard(projectId) {
+                const p = projects.find(x => x.id===projectId);
+                if (!p) return;
+                document.getElementById('dashboardTitle').innerText = '📊 ' + p.name + ' 治理面板';
+                document.getElementById('memberList').innerHTML = p.members.map(m => `<div class="member-row"><div class="member-tag-area">${getRoleTag(m.role)}</div><div class="member-name">${m.realName} - 投票权重 ${m.voteWeight}%</div></div>`).join('');
+                const totalInc = p.finances.filter(f=>f.type==='income').reduce((a,b)=>a+b.amount,0);
+                const totalExp = p.finances.filter(f=>f.type==='expense').reduce((a,b)=>a+b.amount,0);
+                document.getElementById('financeSummary').innerHTML = `收入 ¥${totalInc.toLocaleString()} / 支出 ¥${totalExp.toLocaleString()} / 结余 ¥${(totalInc-totalExp).toLocaleString()}`;
+                let voteHtml = p.votes.map(v => { let opts = v.options.split(',').map(o => `<label style="display:flex;align-items:center;gap:8px;margin:8px 0;"><input type="radio" name="vote_${v.id}" value="${o.trim()}" ${v.voted?'disabled':''}> ${o.trim()}</label>`).join(''); return `<div style="margin:12px 0;padding:12px;background:#f8fafc;border-radius:8px;"><strong>${v.title}</strong><p>${v.desc}</p>${opts}<button class="btn btn-sm btn-outline" ${v.voted?'disabled':''} onclick="submitVote(${v.id}, this)">投票</button></div>`; }).join('');
+                document.getElementById('voteList').innerHTML = voteHtml || '<p>暂无投票</p>';
+            }
+            window.submitVote = function(voteId, btn) {
+                const selected = document.querySelector(`input[name="vote_${voteId}"]:checked`);
+                if (!selected) return alert('请选择一个选项');
+                const pId = parseInt(document.getElementById('page-dashboard').dataset.projectId);
+                const p = projects.find(x => x.id===pId);
+                const v = p.votes.find(x=>x.id===voteId);
+                v.voted = true; btn.disabled = true; alert('投票成功！'); renderDashboard(p.id);
+            };
+            document.getElementById('addFinanceBtn').addEventListener('click', ()=> document.getElementById('financeForm').style.display='block');
+            document.getElementById('saveFinance').addEventListener('click', function() { const pId = parseInt(document.getElementById('page-dashboard').dataset.projectId); const p = projects.find(x => x.id===pId); p.finances.push({ type: document.getElementById('finType').value, amount: +document.getElementById('finAmount').value, description: document.getElementById('finDesc').value }); document.getElementById('financeForm').style.display='none'; renderDashboard(p.id); });
+            document.getElementById('createVoteBtn').addEventListener('click', ()=> document.getElementById('voteCreateForm').style.display='block');
+            document.getElementById('saveVote').addEventListener('click', function() { const pId = parseInt(document.getElementById('page-dashboard').dataset.projectId); const p = projects.find(x => x.id===pId); p.votes.push({ id: Date.now(), title: document.getElementById('voteTitle').value, desc: document.getElementById('voteDesc').value, options: document.getElementById('voteOptions').value, voted: false }); document.getElementById('voteCreateForm').style.display='none'; renderDashboard(p.id); });
+
+            function openApplyModal(projectId) {
+                selectedRole = null; currentApplyProjectId = projectId;
+                document.querySelectorAll('.role-option').forEach(o => o.classList.remove('selected'));
+                ['capitalField','techField','managementField','employeeField','parttimeField'].forEach(id => document.getElementById(id).style.display='none');
+                document.getElementById('applyFormArea').style.display='none';
+                document.getElementById('applyModal').classList.add('active');
+            }
+            document.querySelectorAll('.role-option').forEach(option => option.addEventListener('click', function() {
+                document.querySelectorAll('.role-option').forEach(o => o.classList.remove('selected'));
+                this.classList.add('selected'); selectedRole = this.dataset.role;
+                ['capitalField','techField','managementField','employeeField','parttimeField'].forEach(id => document.getElementById(id).style.display='none');
+                switch(selectedRole) {
+                    case 'capital': document.getElementById('capitalField').style.display='block'; break;
+                    case 'tech': document.getElementById('techField').style.display='block'; break;
+                    case 'management': document.getElementById('managementField').style.display='block'; break;
+                    case 'employee': document.getElementById('employeeField').style.display='block'; break;
+                    case 'parttime': document.getElementById('parttimeField').style.display='block'; break;
+                }
+                document.getElementById('applyFormArea').style.display='block';
+            }));
+            document.getElementById('cancelApply').addEventListener('click', ()=> document.getElementById('applyModal').classList.remove('active'));
+            document.getElementById('applyDetailForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                const p = projects.find(x => x.id===currentApplyProjectId);
+                if (!p) return;
+                let details = {};
+                switch(selectedRole) {
+                    case 'capital': details.amount = document.getElementById('applyAmount').value; break;
+                    case 'tech': details.techDesc = document.getElementById('applyTech').value; break;
+                    case 'management': details.position = document.getElementById('applyPositionMgmt').value; details.salary = document.getElementById('applySalaryMgmt').value; break;
+                    case 'employee': details.position = document.getElementById('applyPositionEmp').value; details.salary = document.getElementById('applySalaryEmp').value; break;
+                    case 'parttime': details.service = document.getElementById('applyServicePT').value; details.hourlyRate = document.getElementById('applyHourlyRate').value; details.hoursPerWeek = document.getElementById('applyHoursPerWeek').value; break;
+                }
+                p.applications.push({ id: Date.now(), userId: currentUser.id, realName: currentUser.realName||currentUser.username, role: selectedRole, details, status:'pending' });
+                alert('申请已提交！');
+                document.getElementById('applyModal').classList.remove('active');
+                document.getElementById('applyDetailForm').reset();
+                if (currentPageId === 'detail') renderDetail(currentApplyProjectId);
+            });
+
+            function generateMockApplications(project) {
+                const candidates = mockUsers.filter(u => u.id !== currentUser?.id);
+                const shuffled = candidates.sort(() => Math.random()-0.5);
+                const applicants = shuffled.slice(0, Math.min(4, shuffled.length));
+                const roles = ['capital','tech','management','employee','parttime'];
+                applicants.forEach((user, index) => {
+                    const role = roles[index % roles.length];
+                    let details = {};
+                    switch(role) {
+                        case 'capital': details.amount = (Math.floor(Math.random()*50)+5)*1000; break;
+                        case 'tech': details.techDesc = '拥有相关专利/软著'; break;
+                        case 'management': details.position = '运营总监'; details.salary = 200000; break;
+                        case 'employee': details.position = '开发工程师'; details.salary = 15000; break;
+                        case 'parttime': details.service = '市场推广'; details.hourlyRate = 100; details.hoursPerWeek = 10; break;
+                    }
+                    project.applications.push({ id: Date.now()+index, userId: user.id, realName: user.realName, role, details, status:'pending' });
+                });
+            }
+            document.getElementById('createProjectForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                if (!currentUser) { alert('请先登录'); return; }
+                const newProj = {
+                    id: Date.now(), founder: currentUser.username,
+                    name: document.getElementById('projName').value, desc: document.getElementById('projDesc').value,
+                    orgType: document.getElementById('orgType').value, stage: document.getElementById('projStage').value,
+                    targetCapital: Number(document.getElementById('targetCapital').value), targetMembers: Number(document.getElementById('targetMembers').value),
+                    raisedCapital: 0, requireVerified: document.getElementById('requireVerified').checked,
+                    members: [{ userId: currentUser.id, realName: currentUser.realName||currentUser.username, role: '创始发起人', voteWeight: 100 }],
+                    applications: [], finances:[], votes:[], likes:[], comments:[], chatMessages:[]
+                };
+                generateMockApplications(newProj);
+                projects.unshift(newProj);
+                alert('项目创建成功！');
+                document.getElementById('createProjectForm').reset();
+                showPage('myprojects');
+            });
+
+            function renderPersonal() {
+                if (!currentUser) return;
+                document.getElementById('profileUsername').value = currentUser.username;
+                document.getElementById('profileRealName').value = currentUser.realName || '';
+                document.getElementById('profileIdCard').value = currentUser.idCard || '';
+            }
+            document.getElementById('profileForm').addEventListener('submit', function(e) { e.preventDefault(); currentUser.realName = document.getElementById('profileRealName').value; currentUser.idCard = document.getElementById('profileIdCard').value; if (currentUser.realName && currentUser.idCard) currentUser.verified = true; alert('已更新'); updateUI(); goHome(); });
+            document.getElementById('displayName').addEventListener('click', ()=> { showPage('personal'); });
+
+            document.getElementById('notificationBell').addEventListener('click', function(e) { e.stopPropagation(); toggleNotificationDropdown(); });
+            document.body.addEventListener('click', function() { document.getElementById('notificationDropdown').classList.remove('active'); });
+
+            document.getElementById('loginBtn').addEventListener('click', ()=> document.getElementById('loginModal').classList.add('active'));
+            document.getElementById('registerBtn').addEventListener('click', ()=> document.getElementById('registerModal').classList.add('active'));
+            document.getElementById('toRegister').addEventListener('click', e=>{ e.preventDefault(); document.getElementById('loginModal').classList.remove('active'); document.getElementById('registerModal').classList.add('active'); });
+            document.getElementById('toLogin').addEventListener('click', e=>{ e.preventDefault(); document.getElementById('registerModal').classList.remove('active'); document.getElementById('loginModal').classList.add('active'); });
+            document.getElementById('logoutBtn').addEventListener('click', ()=>{ currentUser=null; updateUI(); goHome(); });
+            function afterLoginRegister() { updateUI(); const pendingId = document.getElementById('loginModal').dataset.pendingJoinProjectId; if (pendingId) { delete document.getElementById('loginModal').dataset.pendingJoinProjectId; const p = projects.find(pr => pr.id===parseInt(pendingId)); if (p) openApplyModal(p.id); } }
+            document.getElementById('loginForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                const u = document.getElementById('loginUser').value, p = document.getElementById('loginPass').value;
+                const user = users.find(x => x.username===u && x.password===p);
+                if (!user) return alert('账号或密码错误');
+                currentUser = user; document.getElementById('loginModal').classList.remove('active'); afterLoginRegister();
+            });
+            document.getElementById('registerForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                const user = { id: Date.now(), username: document.getElementById('regUser').value, password: document.getElementById('regPass').value, realName: null, idCard: null, verified: false, favorites: [] };
+                users.push(user); currentUser = user; document.getElementById('registerModal').classList.remove('active'); afterLoginRegister();
+                alert('注册成功，已自动登录！');
+            });
+            document.getElementById('verifyBtn')?.addEventListener('click', ()=> document.getElementById('verifyModal').classList.add('active'));
+            document.getElementById('verifyForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                if (!currentUser) return;
+                currentUser.realName = document.getElementById('verifyName').value;
+                currentUser.idCard = document.getElementById('verifyIdCard').value;
+                currentUser.verified = true;
+                alert('认证成功'); document.getElementById('verifyModal').classList.remove('active'); updateUI();
+            });
+            window.onclick = function(e) { if (e.target.classList.contains('modal')) e.target.classList.remove('active'); };
+
+            updateUI();
+        })();
+    </script>
+</body>
+</html>
